@@ -111,12 +111,14 @@ export default function App() {
   const stats = useMemo(() => {
     let totalEstimated = 0;
     let totalActual = 0;
+    let totalUsed = 0; // The committed/best-estimate used amount
     let itemCount = 0;
 
     budget.categories.forEach(cat => {
       cat.items.forEach(item => {
         totalEstimated += item.estimatedCost;
         totalActual += item.actualCost || 0;
+        totalUsed += (item.actualCost || item.estimatedCost);
         itemCount++;
       });
     });
@@ -124,8 +126,9 @@ export default function App() {
     return {
       totalEstimated,
       totalActual,
-      remaining: budget.totalLimit - totalActual,
-      percentUsed: (totalActual / budget.totalLimit) * 100
+      totalUsed,
+      remaining: budget.totalLimit - totalUsed,
+      percentUsed: (totalUsed / budget.totalLimit) * 100
     };
   }, [budget]);
 
@@ -415,7 +418,7 @@ export default function App() {
               <span className="text-slate-500 text-sm font-medium uppercase tracking-wider">Terpakai</span>
               <ArrowRightLeft className="text-blue-500" size={20} />
             </div>
-            <span className="text-2xl font-bold">{formatCurrency(stats.totalActual)}</span>
+            <span className="text-2xl font-bold">{formatCurrency(stats.totalUsed)}</span>
             <div className="mt-2 w-full bg-slate-100 h-2 rounded-full overflow-hidden">
               <div 
                 className={`h-full transition-all duration-500 ${stats.percentUsed > 100 ? 'bg-rose-500' : 'bg-blue-500'}`}
