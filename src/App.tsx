@@ -215,23 +215,16 @@ export default function App() {
       id: `item-${Date.now()}`,
       name: '',
       estimatedCost: 0,
-      actualCost: 0
+      actualCost: 0,
+      notes: ''
     };
-    setBudget(prev => ({
-      ...prev,
-      categories: prev.categories.map(cat => 
-        cat.id === catId ? { ...cat, items: [...cat.items, newItem] } : cat
-      )
-    }));
     setEditingItem({ catId, item: newItem });
     setExpandedCategories(prev => ({ ...prev, [catId]: true }));
   };
 
   const updateItem = (catId: string, updatedItem: BudgetItem) => {
     const isInvalid = !updatedItem.name.trim() || 
-                      updatedItem.estimatedCost === 0 || 
-                      updatedItem.actualCost === 0 || 
-                      !updatedItem.notes?.trim();
+                      updatedItem.estimatedCost === 0;
 
     if (isInvalid) {
       setItemValidationError(true);
@@ -242,7 +235,12 @@ export default function App() {
       ...prev,
       categories: prev.categories.map(cat => 
         cat.id === catId 
-          ? { ...cat, items: cat.items.map(i => i.id === updatedItem.id ? updatedItem : i) } 
+          ? { 
+              ...cat, 
+              items: cat.items.some(i => i.id === updatedItem.id)
+                ? cat.items.map(i => i.id === updatedItem.id ? updatedItem : i)
+                : [...cat.items, updatedItem]
+            } 
           : cat
       )
     }));
@@ -717,8 +715,8 @@ export default function App() {
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Rp</span>
                       <input 
                         type="text"
-                        placeholder="Contoh: 750.000"
-                        className={`w-full bg-slate-50 border rounded-xl pl-10 pr-4 py-3 outline-none transition-colors ${itemValidationError && editingItem.item.actualCost === 0 ? 'border-rose-500 bg-rose-50' : 'border-slate-200 focus:border-rose-500'}`}
+                        placeholder="Contoh: 750.000 (Opsional)"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:border-rose-500 transition-colors"
                         value={editingItem.item.actualCost === 0 ? '' : formatNumberWithDots(editingItem.item.actualCost)}
                         onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, actualCost: parseNumberFromDots(e.target.value) } })}
                       />
@@ -728,10 +726,10 @@ export default function App() {
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Catatan</label>
                   <textarea 
-                    className={`w-full bg-slate-50 border rounded-xl px-4 py-3 outline-none transition-colors min-h-[100px] ${itemValidationError && !editingItem.item.notes?.trim() ? 'border-rose-500 bg-rose-50' : 'border-slate-200 focus:border-rose-500'}`}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-rose-500 transition-colors min-h-[100px]"
                     value={editingItem.item.notes || ''}
                     onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, notes: e.target.value } })}
-                    placeholder="Contoh: Vendor A, DP sudah masuk, dll."
+                    placeholder="Contoh: Vendor A, DP sudah masuk, dll. (Opsional)"
                   />
                 </div>
               </div>
